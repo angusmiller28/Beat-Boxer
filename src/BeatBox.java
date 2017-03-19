@@ -47,43 +47,104 @@ public class BeatBox {
     } // close method
     
     public void buildTrackAndStart(){
-              
-       
+      int[] trackList = null;
+        
+        sequence.deleteTrack(track);
+        track = sequence.createTrack();
+        
+        for (int i = 0; i < 16; i++){
+            trackList = new int[16];
+            
+            int key = instruments[i];
+            
+            for (int j = 0; j < 16; j++){
+                JCheckBox jc = (JCheckBox) checkboxList.get(j + (16*i));
+                if (jc.isSelected()){
+                    trackList[j] = key;
+                } else {
+                    trackList[j] = 0;
+                }
+            } // close inner loop
+            
+            makeTracks(trackList);
+            track.add(makeEvent(176,1,127,0,16));       
+        } // close outer loop
+        
+        track.add(makeEvent(192,9,1,0,15));
+        try {
+            sequencer.setSequence(sequence);
+            sequencer.setLoopCount(sequencer.LOOP_CONTINUOUSLY);
+            sequencer.start();
+            sequencer.setTempoInBPM(120);
+        } catch (Exception e){ e.printStackTrace(); }        
     } // close buildTrackAndStart method
     
     public class MyStartListener implements ActionListener {
         public void actionPerformed(ActionEvent a){
-           
+            buildTrackAndStart();
         }
     } 
     
     public class MyStopListener implements ActionListener {
-      public void actionPerformed(ActionEvent a){
-           
+        public void actionPerformed(ActionEvent a){
+            sequencer.stop();
         }
     } 
     
     public class MyUpTempoListener implements ActionListener {
-       public void actionPerformed(ActionEvent a){
-           
+        public void actionPerformed(ActionEvent a){
+            float tempoFactor = sequencer.getTempoFactor();
+            sequencer.setTempoFactor((float) (tempoFactor * 1.03));
         }
     } 
     
     public class MyDownTempoListener implements ActionListener {
-       public void actionPerformed(ActionEvent a){
-           
+        public void actionPerformed(ActionEvent a){
+            float tempoFactor = sequencer.getTempoFactor();
+            sequencer.setTempoFactor((float) (tempoFactor * .97));
         }
     } 
     public class MySendListener implements ActionListener {
-       public void actionPerformed(ActionEvent a){
-           
+        public  void actionPerformed(ActionEvent a){
+            boolean[] checkboxState = new boolean[256];
+
+            for (int i = 0; i < 256; i++){
+                JCheckBox check = (JCheckBox) checkboxList.get(i);
+                if (check.isSelected()){
+                    checkboxState[i] = true;
+                }
+            }
+            try {
+                FileOutputStream fileStream = new FileOutputStream(new File("Checkbox.ser"));
+                ObjectOutputStream os = new ObjectOutputStream(fileStream);
+                os.writeObject(checkboxState);
+            } catch (Exception ex) { ex.printStackTrace(); }
+
         }
     }// close inner class
 
     public class MyReadInListener implements ActionListener {
-       public void actionPerformed(ActionEvent a){
-           
-       }
+        public void actionPerformed(ActionEvent a){
+            boolean[] checkboxState = null;
+            try {
+                FileInputStream fileIn = new FileInputStream(new File("checkbox.ser"));
+                ObjectInputStream is = new ObjectInputStream(fileIn);
+                checkboxState = (boolean[]) is.readObject();
+            } catch(Exception ex) {ex.printStackTrace(); }
+            
+            for (int i = 0; i < 256; i++){
+                JCheckBox check = (JCheckBox) checkboxList.get(i);
+                if (checkboxState[i]){
+                    check.setSelected(true);
+                } else {
+                    check.setSelected(false);
+                }
+            }
+            
+            sequencer.stop();
+            buildTrackAndStart();
+                    
+        } // close method
     } // close inner class
     
     public void makeTracks(int[] list){
