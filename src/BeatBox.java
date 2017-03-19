@@ -33,7 +33,67 @@ public class BeatBox {
     }
     
     public void buildGUI(){
+        theFrame = new JFrame("Cyber BeatBox");
+        theFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        BorderLayout layout = new BorderLayout();
+        JPanel background = new JPanel(layout);
+        background.setBorder(BorderFactory.createEmptyBorder(10,10,10,10));
         
+        checkboxList = new ArrayList<JCheckBox>();
+        Box buttonBox = new Box(BoxLayout.Y_AXIS);
+        
+        JButton start = new JButton("Start");
+        start.addActionListener(new MyStartListener());
+        buttonBox.add(start);
+        
+        JButton stop = new JButton("Stop");
+        stop.addActionListener(new MyStopListener());
+        buttonBox.add(stop);
+        
+        JButton save = new JButton("Save");
+        save.addActionListener(new MySendListener());
+        buttonBox.add(save);
+        
+        JButton restore = new JButton("Restore A Pattern");
+        restore.addActionListener(new MyReadInListener());
+        buttonBox.add(restore);
+        
+        JButton upTempo = new JButton("Tempo Up");
+        start.addActionListener(new MyUpTempoListener());
+        buttonBox.add(upTempo);
+        
+        JButton downTempo = new JButton("Tempo Down");
+        downTempo.addActionListener(new MyDownTempoListener());
+        buttonBox.add(downTempo);
+        
+        Box nameBox = new Box(BoxLayout.Y_AXIS);
+        for (int i = 0; i < 16; i++){
+            nameBox.add(new Label(instrumentNames[i]));
+        }
+        
+        background.add(BorderLayout.EAST, buttonBox);
+        background.add(BorderLayout.WEST, nameBox);
+        
+        theFrame.getContentPane().add(background);
+        
+        GridLayout grid = new GridLayout(16,16);
+        grid.setVgap(1);
+        grid.setHgap(2);
+        mainPanel = new JPanel(grid);
+        background.add(BorderLayout.CENTER, mainPanel);
+        
+        for (int i = 0; i < 256; i++){
+            JCheckBox c = new JCheckBox();
+            c.setSelected(false);
+            checkboxList.add(c);
+            mainPanel.add(c);
+        } // end loop
+        
+        setUpMidi();
+        
+        theFrame.setBounds(50,50,300,300);
+        theFrame.pack();
+        theFrame.setVisible(true);
     } // close method
     
     public void setUpMidi(){
